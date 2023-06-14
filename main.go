@@ -1,3 +1,7 @@
+// @title Enderchest API
+// @version 1.0
+// @description This is the API server for Enderchest.
+// @BasePath /api/v1
 package main
 
 import (
@@ -8,6 +12,9 @@ import (
 
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
+	docs "github.com/kalvin807/enderchest/docs"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/zap"
@@ -56,16 +63,25 @@ func setupRouter(mongoClient *mongo.Client) *gin.Engine {
 	router := gin.New()
 	router.Use(ginzap.Ginzap(logger, time.RFC3339, true))
 	router.Use(ginzap.RecoveryWithZap(logger, true))
-
-	router.PUT("/image", func(c *gin.Context) {
-		UploadImage(c, mongoClient)
-	})
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
+	docs.SwaggerInfo.BasePath = "/api/v1"
+	v1 := router.Group("/api/v1")
+	{
+		v1.PUT("/image", func(c *gin.Context) {
+			UploadImage(c, mongoClient)
 		})
-	})
+		v1.GET("/ping", Ping)
+	}
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	return router
+}
+
+// @Summary Check server status
+// @Description Checks if the server is alive
+// @Produce json
+// @Success 200 {string} string "pong"
+// @Router /ping [get]
+func Ping(c *gin.Context) {
+	c.JSON(200, "pong")
 }
 
 func main() {

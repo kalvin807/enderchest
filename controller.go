@@ -51,6 +51,17 @@ func GetPresignedURL(ctx context.Context, objectKey string, client *s3.Client) s
 	return presignResult.URL
 }
 
+// @Summary Upload image
+// @Description Uploads an image to the server
+// @Accept multipart/form-data
+// @Param image formData file true "Image file"
+// @Param metadata formData string false "Image metadata"
+// @Produce json
+// @Success 200 {string} string "Image uploaded successfully"
+// @Failure 400 {string} string "get form err"
+// @Failure 500 {string} string "failed to upload file"
+// @Failure 500 {string} string "failed to save metadata"
+// @Router /image [put]
 func UploadImage(c *gin.Context, mongoClient *mongo.Client) {
 	file, err := c.FormFile("image")
 	if err != nil {
