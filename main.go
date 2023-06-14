@@ -106,5 +106,11 @@ func main() {
 	}()
 
 	router := setupRouter(mongoClient)
-	router.Run(":8080")
+	port := func() string {
+		if p := os.Getenv("PORT"); p != "" {
+			return p
+		}
+		return "8080"
+	}()
+	router.Run(":" + port)
 }
